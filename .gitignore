@@ -9,7 +9,7 @@
 # Distribution / packaging
 .Python
 env/
-
+dist/
 
 # Unit test / coverage reports
 htmlcov/

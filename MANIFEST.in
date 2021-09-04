@@ -1,0 +1,4 @@
+include README.md LICENSE
+recursive-include auth_framework/templates *.html *.txt
+global-exclude __pycache__
+global-exclude *.py[co]

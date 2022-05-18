@@ -15,7 +15,7 @@ RefreshToken = get_refresh_token_model()
 UserModel = get_user_model()
 
 
-class TestUserInfoSerializer(serializers.ModelSerializer):
+class UserInfoTestSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = UserModel
@@ -87,7 +87,7 @@ class AccessTokenTest(BaseTest):
         self.assertIn('refresh_token', content)
         self.assertNotIn('user', content)
 
-    @override_settings(AUTH_FRAMEWORK={"SERIALIZERS": {'USERINFO_SERIALIZER': TestUserInfoSerializer}})
+    @override_settings(AUTH_FRAMEWORK={"SERIALIZERS": {'USERINFO_SERIALIZER': UserInfoTestSerializer}})
     def test_get_token_with_userinfo(self):
         """
         Request an access token using Resource Owner Password Flow

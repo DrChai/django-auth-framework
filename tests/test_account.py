@@ -8,20 +8,19 @@ from django.db import transaction
 from django.test import override_settings
 from django.urls import reverse
 from django.utils import timezone
-from oauth2_provider.models import get_access_token_model, Application
+from oauth2_provider.models import get_access_token_model
 from oauth2_provider.settings import oauth2_settings
 from rest_framework import serializers
-from rest_framework.test import APITransactionTestCase, APIRequestFactory
 
 from auth_framework.serializers.mixin_serializers import EmailMixin
-from auth_framework.serializers.password_serializers import PasswordChangeSerializer, CreateResetPinSerializer
-from .test_oauth import BaseTest, TestUserInfoSerializer
+from auth_framework.serializers.password_serializers import PasswordChangeSerializer
+from .test_oauth import BaseTest, UserInfoTestSerializer
 
 AccessToken = get_access_token_model()
 UserModel = get_user_model()
 
 
-class TestEmailMixinSerializer(EmailMixin, TestUserInfoSerializer):
+class EmailMixinTestSerializer(EmailMixin, UserInfoTestSerializer):
     pass
 
 
@@ -43,7 +42,7 @@ class BaseAccountTest(BaseTest):
 
 class UserInfoTest(BaseAccountTest):
 
-    @override_settings(AUTH_FRAMEWORK={"SERIALIZERS": {'USERINFO_SERIALIZER': TestUserInfoSerializer}})
+    @override_settings(AUTH_FRAMEWORK={"SERIALIZERS": {'USERINFO_SERIALIZER': EmailMixinTestSerializer}})
     def test_get_self_userinfo(self):
         self.client.credentials(HTTP_AUTHORIZATION='Bearer ' + self.tok.token)
         response = self.client.get(reverse("userinfo",args=['self']),)
@@ -51,7 +50,7 @@ class UserInfoTest(BaseAccountTest):
         self.assertDictEqual(response.data, {'first_name': '', 'last_name': '', 'email': 'test@example.com'})
 
     @override_settings(AUTH_FRAMEWORK={"UNIQUE_EMAIL": False,
-                                    'SERIALIZERS': {'USERINFO_SERIALIZER': TestEmailMixinSerializer}})
+                                    'SERIALIZERS': {'USERINFO_SERIALIZER': EmailMixinTestSerializer}})
     def test_patch_self_userinfo(self):
         self.client.credentials(HTTP_AUTHORIZATION='Bearer ' + self.tok.token)
         response = self.client.patch(reverse("userinfo", args=['self']),
@@ -59,11 +58,11 @@ class UserInfoTest(BaseAccountTest):
         self.assertEqual(response.status_code, 200)
         self.assertDictEqual(response.data, {'first_name': '', 'last_name': 'patch', 'email': 'test@example.com'})
         # since db migrations persist, we just check serializer validation
-        serializer = TestEmailMixinSerializer(data={'email': 'dev@example.com',})
+        serializer = EmailMixinTestSerializer(data={'email': 'dev@example.com',})
         self.assertEqual(serializer.is_valid(), True)
 
     @override_settings(AUTH_FRAMEWORK={"UNIQUE_EMAIL": True,
-                                    'SERIALIZERS': {'USERINFO_SERIALIZER': TestEmailMixinSerializer}})
+                                       'SERIALIZERS': {'USERINFO_SERIALIZER': EmailMixinTestSerializer}})
     def test_patch_unique_email(self):
         self.client.credentials(HTTP_AUTHORIZATION='Bearer ' + self.tok.token)
         response = self.client.patch(reverse("userinfo", args=['self']),
@@ -74,7 +73,7 @@ class UserInfoTest(BaseAccountTest):
                                      data={'email': 'dev@example.com'})
         self.assertEqual(response.status_code, 400)
 
-    @override_settings(AUTH_FRAMEWORK={"SERIALIZERS": {'USERINFO_SERIALIZER': TestUserInfoSerializer}})
+    @override_settings(AUTH_FRAMEWORK={"SERIALIZERS": {'USERINFO_SERIALIZER': EmailMixinTestSerializer}})
     def test_read_others_info(self):
         dev_pk=self.dev_user.pk
         self.client.credentials(HTTP_AUTHORIZATION='Bearer ' + self.tok.token)
@@ -228,12 +227,12 @@ class CustomSignUpSerializer(serializers.Serializer):
     last_name = serializers.CharField()
 
 
-class TestUsernameValidator(UnicodeUsernameValidator):
+class UsernameTestValidator(UnicodeUsernameValidator):
     regex = r'^\w+$'
 
 
 @override_settings(AUTH_FRAMEWORK={"USE_PASSWORD_TWICE_VALIDATION": False,
-                                "SERIALIZERS": {'USERINFO_SERIALIZER': TestUserInfoSerializer}})
+                                   "SERIALIZERS": {'USERINFO_SERIALIZER': UserInfoTestSerializer}})
 class CreateUserWithToken(BaseTest):
 
     def _hard_reload_serializer_mod(self):
@@ -256,7 +255,7 @@ class CreateUserWithToken(BaseTest):
         self.assertDictEqual(response.data["user"], {'first_name': '', 'last_name': '', 'email': 'adb@ad.ca'})
 
     @override_settings(AUTH_FRAMEWORK={"USE_PASSWORD_TWICE_VALIDATION": False,
-                                    "SERIALIZERS": {'USERINFO_SERIALIZER': TestUserInfoSerializer,
+                                    "SERIALIZERS": {'USERINFO_SERIALIZER': UserInfoTestSerializer,
                                                     'SIGNUP_SERIALIZER': CustomSignUpSerializer
                                                     }})
     def test_400_custom_field_on_creation(self):
@@ -278,7 +277,7 @@ class CreateUserWithToken(BaseTest):
         self.assertEqual(response.status_code, 400)
 
     @override_settings(AUTH_FRAMEWORK={"SIGNUP_USERNAME_VALIDATORS":
-                                        ['tests.test_account.TestUsernameValidator']})
+                                        ['tests.test_account.UsernameTestValidator']})
     def test_custom_username_validator(self):
         url = reverse('create-user')
         data = {
@@ -288,7 +287,7 @@ class CreateUserWithToken(BaseTest):
         self.assertEqual(response.status_code, 400)
 
     @override_settings(AUTH_FRAMEWORK={"USE_PASSWORD_TWICE_VALIDATION": False,
-                                       "SERIALIZERS": {'USERINFO_SERIALIZER': TestUserInfoSerializer,
+                                       "SERIALIZERS": {'USERINFO_SERIALIZER': UserInfoTestSerializer,
                                                        'SIGNUP_SERIALIZER': CustomSignUpSerializer
                                                        }})
     def test_custom_field_on_creation(self):

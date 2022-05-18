@@ -105,7 +105,7 @@ class SignUpSerializer(*base_serializers()):
         user.username = user.username or self.generate_unique_username([email, last_name, first_name])
 
     def generate_unique_username(self, txts):
-        regex = '[^\w\s@+.-]'
+        regex = r'[^\w\s@+.-]'
         username = None
         txts = list(filter(None, txts))
         for txt in txts:
@@ -116,7 +116,7 @@ class SignUpSerializer(*base_serializers()):
             txt = force_str(re.sub(regex, '', txt).lower())
             txt = txt.split('@')[0]
             txt = txt.strip()
-            txt = re.sub('\s+', '_', txt)
+            txt = re.sub(r'\s+', '_', txt)
             try:
                 username = self.validate_username(txt)
                 break
@@ -126,7 +126,7 @@ class SignUpSerializer(*base_serializers()):
             username = ''.join(txts)
             if username == '':
                 username = 'user'
-            username + str(uuid.uuid4())[:4]
+                username += str(uuid.uuid4())[:4]
         return username
 
     class Meta:

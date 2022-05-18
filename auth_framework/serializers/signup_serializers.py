@@ -5,8 +5,8 @@ import unicodedata
 
 from django.contrib.auth import get_user_model
 from django.core.exceptions import ValidationError
-from django.utils.encoding import force_text
-from django.utils.translation import ugettext_lazy as _
+from django.utils.encoding import force_str
+from django.utils.translation import gettext_lazy as _
 from rest_framework import serializers
 
 from .mixin_serializers import PasswordMixin, EmailMixin, PhoneNumPinMixin
@@ -105,18 +105,18 @@ class SignUpSerializer(*base_serializers()):
         user.username = user.username or self.generate_unique_username([email, last_name, first_name])
 
     def generate_unique_username(self, txts):
-        regex = '[^\w\s@+.-]'
+        regex = r'[^\w\s@+.-]'
         username = None
         txts = list(filter(None, txts))
         for txt in txts:
             if not txt:
                 continue
-            txt = unicodedata.normalize('NFKD', force_text(txt))
+            txt = unicodedata.normalize('NFKD', force_str(txt))
             txt = txt.encode('ascii', 'ignore').decode('ascii')
-            txt = force_text(re.sub(regex, '', txt).lower())
+            txt = force_str(re.sub(regex, '', txt).lower())
             txt = txt.split('@')[0]
             txt = txt.strip()
-            txt = re.sub('\s+', '_', txt)
+            txt = re.sub(r'\s+', '_', txt)
             try:
                 username = self.validate_username(txt)
                 break
@@ -126,7 +126,7 @@ class SignUpSerializer(*base_serializers()):
             username = ''.join(txts)
             if username == '':
                 username = 'user'
-            username + str(uuid.uuid4())[:4]
+                username += str(uuid.uuid4())[:4]
         return username
 
     class Meta:

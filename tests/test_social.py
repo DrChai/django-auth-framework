@@ -100,7 +100,7 @@ def mock_requests_factory(provider: str) -> Mock:
     })
 
 
-class TestUserSignupSerializer(serializers.Serializer):
+class UserSignupTestSerializer(serializers.Serializer):
     first_name = serializers.CharField(allow_blank=True)
     last_name = serializers.CharField()
 
@@ -234,7 +234,7 @@ class SocialTest(BaseTest):
         self.assertIn('access_token', json_resp)
 
     @override_settings(AUTH_FRAMEWORK={"SOCIAL_AUTO_SIGNUP": True, "SERIALIZERS": {
-        'SIGNUP_SERIALIZER': TestUserSignupSerializer}})
+        'SIGNUP_SERIALIZER': UserSignupTestSerializer}})
     @patch('auth_framework.social.providers.abstract_adapter.requests.get', Mock(
         side_effect=lambda k: {'https://www.googleapis.com/oauth2/v3/certs': mock_requests_factory('google'),
                                'https://appleid.apple.com/auth/keys': mock_requests_factory('apple'),

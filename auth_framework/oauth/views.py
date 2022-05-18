@@ -27,7 +27,11 @@ class RevokeTokenView(APIView, OAuthLibMixin):
             content = json.loads(body)
             if 'error_description' in content:
                 content = {'message': content['error_description']}
-        logout(request)
+        try:
+            logout(request)
+        except AttributeError:
+            # no session object in Request, pypass
+            pass
         return Response(content, status=code_status)
 
 

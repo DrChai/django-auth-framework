@@ -1,6 +1,6 @@
 from django.apps import apps
 from django.db import models
-from django.utils.translation import ugettext_lazy as _
+from django.utils.translation import gettext_lazy as _
 
 from .settings import app_settings, import_callable
 from .abstract_models import DefaultAbstractUser, PhoneNumberMixin, AvatarMixin, AbstractSocialAccount
@@ -40,7 +40,8 @@ class User(*base_class()):
 
     @classmethod
     def get_fields(cls):
-        return list(map(lambda field: field.name, cls._meta.local_fields))
+        return tuple(set(map(lambda field: field.name, cls._meta.local_fields)) -
+                     {'password', 'is_superuser', 'is_active', 'last_login', 'is_staff', 'date_joined'})
 
 
 class SocialAccount(AbstractSocialAccount):

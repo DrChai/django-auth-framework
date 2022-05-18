@@ -1,7 +1,7 @@
 __author__ = 'Carrycat'
 
 from django.contrib.auth import authenticate, get_user_model
-from django.utils.translation import ugettext_lazy as _
+from django.utils.translation import gettext_lazy as _
 from rest_framework import serializers
 from rest_framework.exceptions import AuthenticationFailed
 
@@ -46,9 +46,7 @@ class DefaultUserinfoSerializer(EmailMixin, serializers.ModelSerializer):
 
     class Meta:
         model = User
-        fields = ('first_name', 'last_name', 'phone_number', 'email',
-                  # 'id', 'username',
-                  )
+        fields = User.get_fields()
 
     def validate_username(self, value):
         user = self.context['request'].user

@@ -1,12 +1,14 @@
 from random import randint
 
+from django.urls import reverse
+
 from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.contrib.auth.tokens import default_token_generator
 from django.contrib.sites.shortcuts import get_current_site
 from django.core.cache import cache
 from django.utils.http import int_to_base36
-from django.utils.translation import ugettext_lazy as _
+from django.utils.translation import gettext_lazy as _
 from rest_framework import serializers
 
 from ..exceptions import AuthFrameworkImproperlyConfigured
@@ -166,10 +168,7 @@ class CreateResetLinkSerializer(EmailMixin, serializers.Serializer):
     def get_email_templ_kwargs(self, uidb36: str, token: str, email_to: str, user: User) -> dict:
         request = self.context.get('request')
         current_site = get_current_site(request)
-        path = '/account/password/reset/{uidb36}-{token}/'.format(
-            uidb36=uidb36,
-            token=token
-        )
+        path = reverse("link-reset-password", kwargs={'uidb36': uidb36, 'token': token})
         url = '{proto}://{domain}{url}'.format(
             proto=request.scheme,
             domain=current_site.domain,

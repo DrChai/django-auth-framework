@@ -9,7 +9,7 @@ from django.core.files import File
 from django.db import models
 from django.contrib.auth.models import AbstractUser as DjangoAbstractUser
 from django.utils.crypto import get_random_string
-from django.utils.translation import ugettext_lazy as _
+from django.utils.translation import gettext_lazy as _
 try:
     from PIL import Image
 except ImportError:

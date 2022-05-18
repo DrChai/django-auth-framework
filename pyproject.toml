@@ -18,23 +18,51 @@ classifiers = [
 	"Framework :: Django :: 2.2",
 	"Framework :: Django :: 3.1",
 	"Framework :: Django :: 3.2",
+	"Framework :: Django :: 4.0",
 	"Intended Audience :: Developers",
 	"License :: OSI Approved :: BSD License",
 	"Operating System :: OS Independent",
 	"Programming Language :: Python :: 3",
-	"Programming Language :: Python :: 3.6",
-	"Programming Language :: Python :: 3.7",
 	"Programming Language :: Python :: 3.8",
 	"Programming Language :: Python :: 3.9",
 	"Topic :: Internet :: WWW/HTTP"
 ]
 [tool.poetry.dependencies]
-python = "^3.5"
+python = "^3.8"
 django = ">= 2.2.0"
 requests = "*"
-django-oauth-toolkit = "^1.5.0"
+django-oauth-toolkit = "^2.0.0"
 djangorestframework = "^3"
 
+
+[tool.pdm]
+includes = ["auth_framework"]
+
+[tool.pdm.dev-dependencies]
+test = [
+    "pytest>=7.1.2",
+    "pytest-django>=4.5.2",
+]
 [build-system]
-requires = ["poetry-core>=1.0.0"]
-build-backend = "poetry.core.masonry.api"
+requires = ["pdm-pep517"]
+build-backend = "pdm.pep517.api"
+
+[project]
+name = "django-auth-framework"
+version = "1.0.3"
+description = "An open source, one-stop authentication framework for Django and ready for production."
+authors = [
+    {name = "Edward Chai", email = "edwardc@acrossor.com"}
+]
+dependencies = ["django>=2.2.0", "requests", "django-oauth-toolkit<3.0.0,>=2.0.0", "djangorestframework<4,>=3"]
+requires-python = ">=3.8,<4.0"
+readme = "README.md"
+license = {text = "MIT"}
+license-expression = "BSD-2-Clause"
+classifiers = ["Development Status :: 5 - Production/Stable", "Environment :: Web Environment", "Framework :: Django", "Framework :: Django :: 2.2", "Framework :: Django :: 3.1", "Framework :: Django :: 3.2", "Framework :: Django :: 4.0", "Intended Audience :: Developers", "License :: OSI Approved :: BSD License", "Operating System :: OS Independent", "Programming Language :: Python :: 3", "Programming Language :: Python :: 3.8", "Programming Language :: Python :: 3.9", "Topic :: Internet :: WWW/HTTP"]
+
+[project.urls]
+homepage = "https://github.com/DrChai/django-auth-framework"
+repository = "https://github.com/DrChai/django-auth-framework"
+
+[project.optional-dependencies]

@@ -209,13 +209,13 @@ class UserResetPasswordTest(BaseAccountTest):
         self.assertEqual(len(mail.outbox), 1)
         self.assertEqual(mail.outbox[0].to, [self.test_user.email])
         body = mail.outbox[0].body
-        self.assertGreater(body.find("/account/password/reset/"), 0)
+        self.assertGreater(body.find("/password/reset/"), 0)
 
         # Extract URL for `password_reset_from_key` view and access it
-        url = body[body.find("/account/password/reset/"):].split()[0]
+        url = body[body.find("/password/reset/"):].split()[0]
         response = self.client.get(url)
-        self.assertEqual(response.data,{'message': 'valid url'})
-        response = self.client.post(url,{'password1': 'resetoflink',})
+        self.assertEqual(response.data, {'message': 'valid url'})
+        response = self.client.post(url, {'password1': 'resetoflink',})
         self.assertEqual(response.status_code, 200)
         user = UserModel.objects.get(pk=self.test_user.pk)
         self.assertTrue(user.check_password('resetoflink'))
@@ -278,7 +278,7 @@ class CreateUserWithToken(BaseTest):
         self.assertEqual(response.status_code, 400)
 
     @override_settings(AUTH_FRAMEWORK={"SIGNUP_USERNAME_VALIDATORS":
-                                        ['auth_framework.tests.test_account.TestUsernameValidator']})
+                                        ['tests.test_account.TestUsernameValidator']})
     def test_custom_username_validator(self):
         url = reverse('create-user')
         data = {

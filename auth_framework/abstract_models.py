@@ -1,10 +1,6 @@
 from io import BytesIO
 from django.conf import settings
 from django.contrib.auth.validators import UnicodeUsernameValidator
-try:
-    from django.contrib.postgres.fields import CICharField as UsernameField
-except ImportError:
-    from django.db.models import CharField as UsernameField
 from django.core.files import File
 from django.db import models
 from django.contrib.auth.models import AbstractUser as DjangoAbstractUser
@@ -26,10 +22,10 @@ class CustomUnicodeUsernameValidator(UnicodeUsernameValidator):
 
 
 class DefaultAbstractUser(DjangoAbstractUser):
-    username = UsernameField(_('username'), max_length=30, unique=True,
-                             help_text=_('Required. 30 characters or fewer. Letters, digits and /./-/_ only.'),
-                             validators=[CustomUnicodeUsernameValidator],
-                             error_messages={'unique': _("A user with that username already exists."),},
+    username = models.CharField(_('username'), max_length=30, unique=True,
+                           help_text=_('Required. 30 characters or fewer. Letters, digits and /./-/_ only.'),
+                           validators=[CustomUnicodeUsernameValidator],
+                           error_messages={'unique': _("A user with that username already exists."),},
                            )
     if app_settings.UNIQUE_EMAIL:
         email = models.EmailField(_('email address'), unique=True)

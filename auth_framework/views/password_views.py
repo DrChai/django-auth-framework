@@ -47,7 +47,17 @@ class CreateResetEntryPoint(GenericAPIView):
             return CreateResetLinkSerializer
 
     def post(self, request, *args, **kwargs):
-        serializer = self.get_serializer(data=request.data)
+        serializer = self.get_serializer(data=request.data, check_existed=True)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response({"message": 'Message has been sent'}, status=status.HTTP_202_ACCEPTED)
+
+
+class CreateSignupPinSerializer(GenericAPIView):
+    serializer_class = CreateResetPinSerializer
+
+    def post(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data, check_existed=False)
         serializer.is_valid(raise_exception=True)
         serializer.save()
         return Response({"message": 'Message has been sent'}, status=status.HTTP_202_ACCEPTED)

@@ -22,13 +22,13 @@ class CustomUnicodeUsernameValidator(UnicodeUsernameValidator):
 
 
 class DefaultAbstractUser(DjangoAbstractUser):
-    username = models.CharField(_('username'), max_length=30, unique=True,
-                           help_text=_('Required. 30 characters or fewer. Letters, digits and /./-/_ only.'),
-                           validators=[CustomUnicodeUsernameValidator],
-                           error_messages={'unique': _("A user with that username already exists."),},
-                           )
+    username = models.CharField(_('username'), max_length=30, unique=True, db_collation='ci',
+                                help_text=_('Required. 30 characters or fewer. Letters, digits and /./-/_ only.'),
+                                validators=[CustomUnicodeUsernameValidator],
+                                error_messages={'unique': _("A user with that username already exists."),},
+                                )
     if app_settings.UNIQUE_EMAIL:
-        email = models.EmailField(_('email address'), unique=True)
+        email = models.EmailField(_('email address'), unique=True, db_collation='ci',)
 
     class Meta:
         verbose_name = _('user')

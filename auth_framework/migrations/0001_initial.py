@@ -17,14 +17,10 @@ class Migration(migrations.Migration):
 
     operations = [
         CreateCollation(
-            'username',
+            'ci',
             provider='icu',
             locale='und-u-ks-level2',
-        ),
-        CreateCollation(
-            'email',
-            provider='icu',
-            locale='und-u-ks-level2',
+            deterministic=False
         ),
         migrations.CreateModel(
             name='User',
@@ -38,8 +34,8 @@ class Migration(migrations.Migration):
                 ('is_staff', models.BooleanField(default=False, help_text='Designates whether the user can log into this admin site.', verbose_name='staff status')),
                 ('is_active', models.BooleanField(default=True, help_text='Designates whether this user should be treated as active. Unselect this instead of deleting accounts.', verbose_name='active')),
                 ('date_joined', models.DateTimeField(default=django.utils.timezone.now, verbose_name='date joined')),
-                ('username', django.contrib.postgres.fields.citext.CICharField(error_messages={'unique': 'A user with that username already exists.'}, help_text='Required. 30 characters or fewer. Letters, digits and /./-/_ only.', max_length=30, unique=True, validators=[auth_framework.abstract_models.CustomUnicodeUsernameValidator], verbose_name='username')),
-                ('email', models.EmailField(max_length=254, unique=True, verbose_name='email address')),
+                ('username', models.CharField(error_messages={'unique': 'A user with that username already exists.'}, help_text='Required. 30 characters or fewer. Letters, digits and /./-/_ only.', max_length=30, unique=True, db_collation='ci', validators=[auth_framework.abstract_models.CustomUnicodeUsernameValidator], verbose_name='username')),
+                ('email', models.EmailField(max_length=254, unique=True, db_collation='ci', verbose_name='email address')),
                 ('groups', models.ManyToManyField(blank=True, help_text='The groups this user belongs to. A user will get all permissions granted to each of their groups.', related_name='user_set', related_query_name='user', to='auth.Group', verbose_name='groups')),
                 ('user_permissions', models.ManyToManyField(blank=True, help_text='Specific permissions for this user.', related_name='user_set', related_query_name='user', to='auth.Permission', verbose_name='user permissions')),
             ],

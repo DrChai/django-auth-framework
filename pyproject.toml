@@ -1,7 +1,7 @@
 
 [tool.poetry]
 name = "django-auth-framework"
-version = "2.0.2"
+version = "2.0.3"
 description = "An open source, one-stop authentication framework for Django and ready for production."
 authors = ["Edward Chai <edwardc@acrossor.com>"]
 packages = [
@@ -47,7 +47,7 @@ build-backend = "pdm.pep517.api"
 
 [project]
 name = "django-auth-framework"
-version = "2.0.2"
+version = "2.0.3"
 description = "An open source, one-stop authentication framework for Django and ready for production."
 authors = [
     {name = "Edward Chai", email = "edwardc@acrossor.com"}

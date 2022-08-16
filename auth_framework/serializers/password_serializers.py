@@ -59,7 +59,6 @@ class PasswordChangeSerializer(PasswordMixin, serializers.Serializer):
 
 class CreateResetPinSerializer(PhoneNumMixin, EmailMixin, serializers.Serializer):
     def __init__(self, *args, **kwargs):
-        kwargs.update({'check_existed': True})
         super().__init__(*args, **kwargs)
         if app_settings.USE_PHONENUMBER_FIELD:
             del self.fields['email']

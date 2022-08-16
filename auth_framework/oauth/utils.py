@@ -36,10 +36,11 @@ def get_access_token(user, request=None):
     token = {
         'access_token': generate_token(),
         'refresh_token': generate_token(),
-        'scope': ' '.join(oauth2_settings.SCOPES),
+        'scope': ' '.join(oauth2_settings._DEFAULT_SCOPES),
         'expires_in':  oauth2_settings.ACCESS_TOKEN_EXPIRE_SECONDS
     }
     request.user = user
+    request.scopes = token['scope'].strip().split(" ")
     request.grant_type = request.client.authorization_grant_type
     validator.save_token(token, request, nonce='server-gen')
     # we create the access token

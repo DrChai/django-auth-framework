@@ -109,7 +109,7 @@ class PhoneNumMixin(serializers.Serializer):
                 )
         else:
             if existed_user:
-                raise serializers.ValidationError(_("This phone number was already taken, please just login."),
+                raise serializers.ValidationError(_("This phone number was already taken."),
                                                   code='AP002')
             else:
                 return val

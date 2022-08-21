@@ -25,7 +25,7 @@ class EmailMixin(serializers.Serializer):
     def validate_email(self, email):
         request_user = getattr(self.context.get('request', None), 'user', None)
         lookup_query = User.objects
-        if request_user:
+        if request_user and request_user.pk:
             lookup_query = lookup_query.exclude(pk=request_user.pk)
         try:
             existed_user = lookup_query.get(email__iexact=email)
@@ -85,13 +85,17 @@ class PhoneNumMixin(serializers.Serializer):
     phone_number = PhoneNumberField()
 
     def __init__(self, *args, **kwargs):
+        self.skip_phone_validation = getattr(self, 'skip_phone_validation', False) or \
+                                   kwargs.pop('skip_phone_validation', False)
         self.check_existed = getattr(self, 'check_existed', None) or kwargs.pop('check_existed', False)
         super().__init__(*args, **kwargs)
 
     def validate_phone_number(self, val):
+        if self.skip_phone_validation:
+            return val
         request_user = getattr(self.context.get('request', None), 'user', None)
         lookup_query = User.objects
-        if request_user:
+        if request_user and request_user.pk:
             lookup_query = lookup_query.exclude(pk=request_user.pk)
         try:
             existed_user = lookup_query.get(phone_number=val)
@@ -118,11 +122,24 @@ class PhoneNumMixin(serializers.Serializer):
 class PhoneNumPinMixin(PhoneNumMixin):
     pin = serializers.IntegerField(max_value=999999)
 
+    def __init__(self, *args, **kwargs):
+        self.skip_pin_validation = getattr(self, 'skip_pin_validation', False) or\
+                                   kwargs.pop('skip_pin_validation', False)
+        super().__init__(*args, **kwargs)
+
     def validate(self, attrs):
         pin = attrs.get("pin")
         phone_number = attrs.get("phone_number")
-        if phone_number and cache.get('pin_verify:%s' % phone_number) == pin:
-            cache.delete(phone_number)
+        if self.skip_pin_validation:
+            if cache.get('is_verified:%s' % phone_number):
+                cache.delete('is_verified:%s' % phone_number)
+                return attrs
+            raise serializers.ValidationError({'phone_number': {
+                'message': _("Phone is not verified."), 'code': 'AP004'}})
+        if phone_number and cache.get('pin_verify:%s' % phone_number) == pin or \
+                app_settings.DEBUG_PIN and pin == app_settings.DEBUG_PIN:
+            cache.delete('pin_verify:%s' % phone_number)
+            cache.set('is_verified:%s' % phone_number, True, 60 * 10)
         elif phone_number:
             raise serializers.ValidationError({'pin': {
                 'message': _("Invalid or expired PIN number."), 'code': 'AP003'}})

@@ -7,7 +7,7 @@ from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 
 from ..serializers.password_serializers import PasswordChangeSerializer, CreateResetPinSerializer, \
-    CreateResetLinkSerializer, ResetPasswordByPinSerializer, ResetPasswordByLinkSerializer
+    CreateResetLinkSerializer, ResetPasswordByPinSerializer, ResetPasswordByLinkSerializer, VerifyPinSerializer
 from ..settings import app_settings
 
 User = get_user_model()
@@ -111,3 +111,13 @@ class ResetPasswordByLink(GenericAPIView):
         serializer.is_valid(raise_exception=True)
         serializer.save()
         return Response({"message": "New password has been saved."})
+
+
+class VerifyPin(GenericAPIView):
+
+    def post(self, request, *args, **kwargs):
+        phone_unique = request.GET.get('phone_unique', False)
+        context = self.get_serializer_context()
+        serializer = VerifyPinSerializer(data=request.data, phone_unique=phone_unique, context=context)
+        if serializer.is_valid(raise_exception=True):
+            return Response({"result": "valid"})

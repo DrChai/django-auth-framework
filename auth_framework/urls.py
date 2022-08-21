@@ -19,7 +19,8 @@ urlpatterns = [
     re_path('email-verify/', account_views.EmailCheck.as_view()),
     re_path(r'^(?P<pk>\d+|self)/$', account_views.UserDetails.as_view(), name="userinfo"),
     re_path('oauth/', include('auth_framework.oauth.urls')),
-    re_path('social/', include('auth_framework.social.urls'))
+    re_path('social/', include('auth_framework.social.urls')),
+    re_path('pin/verify/', password_views.VerifyPin.as_view(), name="verify_pin_api"),
 ]
 if app_settings.USE_PHONENUMBER_FIELD:
     urlpatterns += [

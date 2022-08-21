@@ -62,7 +62,7 @@ def base_serializers():
     custom_serializer = app_settings.SERIALIZERS['SIGNUP_SERIALIZER']
     base = [custom_serializer, AbstractSignUpSerializer]
     if app_settings.USE_PHONENUMBER_FIELD:
-        base.insert(0, PhoneNumPinMixin)
+        base.insert(1, PhoneNumPinMixin)
     return tuple(base)
 
 

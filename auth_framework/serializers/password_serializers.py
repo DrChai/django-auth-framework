@@ -12,7 +12,7 @@ from django.utils.translation import gettext_lazy as _
 from rest_framework import serializers
 
 from ..exceptions import AuthFrameworkImproperlyConfigured
-from .mixin_serializers import PasswordMixin, EmailMixin, PhoneNumMixin
+from .mixin_serializers import PasswordMixin, EmailMixin, PhoneNumMixin, PhoneNumPinMixin
 from ..settings import app_settings
 from ..utils import render_mail
 
@@ -74,7 +74,7 @@ class CreateResetPinSerializer(PhoneNumMixin, EmailMixin, serializers.Serializer
     def get_email_templ_kwargs(self, pin: int, email_to: str) -> dict:
         current_site = get_current_site(self.context['request'])
         return {
-            'current_site': {'name': current_site.name, 'domain': current_site.domain},
+            'current_site': {'name': app_settings.TITLE_IN_MESSAGE or current_site.name, 'domain': current_site.domain},
             'template': 'auth/email_pin.txt',
             'subject': 'Set Up Your New Password',
             'pin': pin,
@@ -100,7 +100,9 @@ class CreateResetPinSerializer(PhoneNumMixin, EmailMixin, serializers.Serializer
                     client = Client(account_sid, auth_token)
 
                 message = client.messages.create(
-                    body="Your %s verification code is %s" % (get_current_site(self.context['request']), pin),
+                    body="{title}: Your verification code is {pin}".format(
+                        title=app_settings.TITLE_IN_MESSAGE or get_current_site(self.context['request']),
+                        pin=pin),
                     from_=from_number,
                     to=str(self.validated_data['phone_number'])
                 )
@@ -206,3 +208,12 @@ class ResetPasswordByLinkSerializer(PasswordMixin, serializers.Serializer):
         self.user.set_password(password)
         self.user.save()
 
+
+class VerifyPinSerializer(PhoneNumPinMixin, serializers.Serializer):
+    pin = serializers.IntegerField(max_value=999999)
+
+    def __init__(self, *args, **kwargs):
+        self.phone_unique = kwargs.pop('phone_unique', False)
+        self.skip_phone_validation = True
+        super().__init__(**kwargs)
+        # request = self.context.get('request')

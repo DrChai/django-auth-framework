@@ -8,6 +8,8 @@ SOCIALACCOUNT_MODEL = getattr(settings, "REST_AUTH_SOCIALACCOUNT_MODEL", "auth_f
 DEFAULTS = {
     'UNIQUE_EMAIL': True,
     'RESET_PASSWORD_BY': 'pin',  # 'url'| 'pin'
+    'DEBUG_PIN': None,
+    'TITLE_IN_MESSAGE': None,
     'SERIALIZERS': {
         # 'SOCIAL_LOGIN_SERIALIZER': 'auth.social.serializers.DefaultSocialLoginSerializer',
         'SIGNUP_SERIALIZER': 'auth_framework.serializers.signup_serializers.DefaultSignUpSerializer',

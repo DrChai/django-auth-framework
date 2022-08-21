@@ -131,17 +131,16 @@ class PhoneNumPinMixin(PhoneNumMixin):
         pin = attrs.get("pin")
         phone_number = attrs.get("phone_number")
         if self.skip_pin_validation:
-            if cache.get('is_verified:%s' % phone_number):
-                cache.delete('is_verified:%s' % phone_number)
-                return attrs
-            raise serializers.ValidationError({'phone_number': {
-                'message': _("Phone is not verified."), 'code': 'AP004'}})
-        if phone_number and cache.get('pin_verify:%s' % phone_number) == pin or \
+            if not cache.get('is_verified:%s' % phone_number):
+                raise serializers.ValidationError({'phone_number': {
+                    'message': _("Phone is not verified."), 'code': 'AP004'}})
+            cache.delete('is_verified:%s' % phone_number)
+        elif phone_number and cache.get('pin_verify:%s' % phone_number) == pin or \
                 app_settings.DEBUG_PIN and pin == app_settings.DEBUG_PIN:
             cache.delete('pin_verify:%s' % phone_number)
             cache.set('is_verified:%s' % phone_number, True, 60 * 10)
         elif phone_number:
             raise serializers.ValidationError({'pin': {
                 'message': _("Invalid or expired PIN number."), 'code': 'AP003'}})
-        super().validate(attrs)
-        return attrs
+        return super().validate(attrs)
+

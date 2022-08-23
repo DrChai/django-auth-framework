@@ -137,8 +137,9 @@ class PhoneNumPinMixin(PhoneNumMixin):
             cache.delete('is_verified:%s' % phone_number)
         elif phone_number and cache.get('pin_verify:%s' % phone_number) == pin or \
                 app_settings.DEBUG_PIN and pin == app_settings.DEBUG_PIN:
-            cache.delete('pin_verify:%s' % phone_number)
-            cache.set('is_verified:%s' % phone_number, True, 60 * 10)
+            if not getattr(self, 'keep_alive', False):
+                cache.delete('pin_verify:%s' % phone_number)
+                cache.set('is_verified:%s' % phone_number, True, 60 * 10)
         elif phone_number:
             raise serializers.ValidationError({'pin': {
                 'message': _("Invalid or expired PIN number."), 'code': 'AP003'}})

@@ -24,7 +24,7 @@ def send_email(email, **extra_kwargs) -> None:
         if app_settings.USE_CELERY_EMAIL:
             try:
                 from auth_framework.tasks import send_email_task
-                send_email_task.apply_async([email,], kwargs=extra_kwargs)
+                send_email_task.apply_async([email, ], kwargs=extra_kwargs)
                 return
             except ImportError:
                 pass
@@ -110,10 +110,11 @@ class CreateResetPinSerializer(PhoneNumMixin, EmailMixin, serializers.Serializer
             except ImportError as err:
                 raise AuthFrameworkImproperlyConfigured('Missing Twilio package for sending sms for pin: %s' % err)
             except AttributeError as err:
-                raise AuthFrameworkImproperlyConfigured('Missing Twilio Env Variables for sending sms for pin: %s' % err)
+                raise AuthFrameworkImproperlyConfigured(
+                    'Missing Twilio Env Variables for sending sms for pin: %s' % err)
             except TwilioRestException:
                 raise serializers.ValidationError(
-                   _("%s, is not a correct mobile number." % str(self.validated_data['phone_number'])), code='AP004')
+                    _("%s, is not a correct mobile number." % str(self.validated_data['phone_number'])), code='AP004')
         else:  # we choose classic email to send ping
             self.send_reset_pin_email(pin, self.validated_data['email'])
             cache.set('pin_verify:%s' % self.validated_data['email'], pin, 60 * 10)
@@ -125,6 +126,8 @@ class ResetPasswordByPinSerializer(PhoneNumMixin, EmailMixin, PasswordMixin, ser
 
     def __init__(self, **kwargs):
         kwargs.update({'check_existed': True})
+        self.skip_pin_validation = getattr(self, 'skip_pin_validation', False) or \
+                                   kwargs.pop('skip_pin_validation', False)
         self.user_found = None
         super().__init__(**kwargs)
         if app_settings.USE_PHONENUMBER_FIELD:
@@ -143,12 +146,17 @@ class ResetPasswordByPinSerializer(PhoneNumMixin, EmailMixin, PasswordMixin, ser
         attrs = super().validate(attrs)
         pin = attrs.get("pin")
         lookup_field = attrs.get(self.id_field)
-        if cache.get('pin_verify:%s' % lookup_field) == pin:
+        if self.skip_pin_validation:
+            if not cache.get('is_verified:%s' % lookup_field):
+                raise serializers.ValidationError({'pin': {
+                    'message': _("Session expired, please get a new pin"), 'code': 'AP006'}})
+            cache.delete('is_verified:%s' % lookup_field)
+        elif cache.get('pin_verify:%s' % lookup_field) == pin or \
+                app_settings.DEBUG_PIN and pin == app_settings.DEBUG_PIN:
             cache.delete('pin_verify:%s' % lookup_field)
         else:
             raise serializers.ValidationError({'pin': {'message': _('pins do not match, please try to get new pin.'),
                                                        'code': 'AP05'}})
-
         return attrs
 
     def save(self):
@@ -161,6 +169,7 @@ class CreateResetLinkSerializer(EmailMixin, serializers.Serializer):
     """
     Serializer for requesting a password reset e-mail.
     """
+
     def __init__(self, **kwargs):
         kwargs.update({'check_existed': True})
         self.user_found = None
@@ -214,6 +223,7 @@ class VerifyPinSerializer(PhoneNumPinMixin, serializers.Serializer):
 
     def __init__(self, *args, **kwargs):
         self.phone_unique = kwargs.pop('phone_unique', False)
+        self.keep_alive = kwargs.pop('keep_alive', False)
         self.skip_phone_validation = True
         super().__init__(**kwargs)
         # request = self.context.get('request')

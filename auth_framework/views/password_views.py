@@ -68,8 +68,9 @@ class ResetPasswordByPin(GenericAPIView):
     serializer_class = ResetPasswordByPinSerializer
 
     def post(self, request, *args, **kwargs):
+        is_verified = request.GET.get('is_verified', False)
         # Create a serializer with request.data
-        serializer = self.get_serializer(data=request.data)
+        serializer = self.get_serializer(data=request.data, skip_pin_validation=is_verified)
         serializer.is_valid(raise_exception=True)
         serializer.save()
         return Response({"message": "New password has been saved."})
@@ -117,7 +118,11 @@ class VerifyPin(GenericAPIView):
 
     def post(self, request, *args, **kwargs):
         phone_unique = request.GET.get('phone_unique', False)
+        keep_alive = request.GET.get('keep_alive', False)
         context = self.get_serializer_context()
-        serializer = VerifyPinSerializer(data=request.data, phone_unique=phone_unique, context=context)
+        serializer = VerifyPinSerializer(data=request.data,
+                                         keep_alive=keep_alive,
+                                         phone_unique=phone_unique,
+                                         context=context)
         if serializer.is_valid(raise_exception=True):
             return Response({"result": "valid"})

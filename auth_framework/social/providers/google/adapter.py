@@ -26,7 +26,7 @@ class GoogleOauthAdapter(OauthAdapter):
             )
             resp.raise_for_status()
             data = resp.json()
-            return data['id'],self.get_model_fields(data), data
+            return data['id'], self.get_model_fields(data), data
         else:
             return super().get_uid(data)
 

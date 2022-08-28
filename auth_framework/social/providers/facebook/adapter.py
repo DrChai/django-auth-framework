@@ -16,6 +16,7 @@ class FacebookOauthAdapter(OauthAdapter):
     id = "facebook"
     profile_url = GRAPH_API_URL + "/me"
     access_token_url = GRAPH_API_URL + "/oauth/access_token"
+    public_key_url = "https://www.facebook.com/.well-known/oauth/openid/jwks/"
     access_token_method = "GET"
 
     def get_user_fields(self):
@@ -34,7 +35,6 @@ class FacebookOauthAdapter(OauthAdapter):
 
     def get_uid(self, data: dict[str:str]):
         access_token = data.get('access_token', None)
-        user_jwt = data.get('user_jwt', None)
         if access_token:
             appsecret_proof = hmac.new(self.client_secret.encode("utf-8"),
                                        msg=access_token.encode("utf-8"),
@@ -50,6 +50,8 @@ class FacebookOauthAdapter(OauthAdapter):
             resp.raise_for_status()
             data = resp.json()
             return data['id'], self.get_model_fields(data), data
+        else:
+            return super().get_uid(data)
 
     def get_model_fields(self, data):
         return dict(

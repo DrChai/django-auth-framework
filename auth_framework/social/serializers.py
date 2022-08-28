@@ -11,7 +11,7 @@ from rest_framework.exceptions import AuthenticationFailed, NotAcceptable
 from ..models import get_socialaccount_model
 from ..serializers.signup_serializers import SignUpSerializer
 from ..settings import app_settings
-from .providers.abstract_adapter import OauthAdapterError
+from .providers.abstract_adapter import OauthAdapterError, InvalidJWT
 
 User = get_user_model()
 SocialAccount = get_socialaccount_model()
@@ -144,7 +144,7 @@ class SocialLoginSerializer(serializers.Serializer):
             social_acct, user = adapter.populate_social_acct(access_token=access_token,user_jwt=user_jwt)
 
             self.complete_social_login(adapter)
-        except HTTPError:
+        except (HTTPError, InvalidJWT):
             raise serializers.ValidationError(
                 {"non_field_error": {'message': _("Credentials failed with the provider."),
                                      'code': 'AOSL006'
